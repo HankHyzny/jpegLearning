@@ -1,14 +1,18 @@
+import java.io.*;
+import java.util.*;
+
 public class Main 
 { 
-	public static void main(String[] args) 
+	public static void main(String[] args) throws FileNotFoundException, IOException 
 	{
-		//temp
-		byte[] bytes = new byte[]{0, 1, 127, -1};
+		Scanner input = new Scanner(System.in);
 
-		for (int i = 0; i < 4; i++)
-		{
-			System.out.println(bytes[i]);
-		}
+		System.out.println("Enter a file name in this directory or absolute file path: ");
+		String userFile = input.nextLine();
 
+
+		File image = new File(userFile);
+		System.out.println("Can Read File: " + image.canRead());
+		JpegData.fileInfo(image);
 	}
 }
