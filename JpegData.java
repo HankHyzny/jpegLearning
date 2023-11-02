@@ -1,3 +1,5 @@
+//package jpegLearning.src;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.*; 
@@ -26,14 +28,30 @@ public class JpegData
 	}
 
 
-	private static void compareBytes(byte[] first, byte[] second)
+	private static boolean compareBytes(byte[] first, byte[] second)
 	{
 
+		if (first.length != second.length)
+		{
+			log("ERROR: arrays of unequal size");
+			return false;
+		}
+		else
+		{
+			boolean isEqual = true;
+			
+			for (int i = 0; (i < first.length) && isEqual; i++)
+			{
+				isEqual = (first[i] == second[i]) && isEqual;
+
+			}
+			return isEqual;
+		}
 	}
 
 	//todo: implenent print byte array method with arguments: as hex, as binary, as decimal
 
-	public static void fileInfo(File image) throws FileNotFoundException, IOException //no error handling for now
+	public static boolean isJpeg (File image) throws FileNotFoundException, IOException //no error handling for now
 	{
 		byte[] firstTwo = new byte[2];
 
@@ -41,27 +59,24 @@ public class JpegData
 		
 		stream.read(firstTwo);
 		
-		for (int i = 0; i < firstTwo.length; i++)
-		{
-			System.out.print(firstTwo[i]);
-			System.out.print(JPEG_START[i] + "\n");
-		}
-
 		System.out.println();
 
-		if (firstTwo[0] == JPEG_START[0] && firstTwo[1] == JPEG_START[1]) //replace with compareBytes method
+		stream.close();
+
+		if (compareBytes(firstTwo, JPEG_START))
 		{
 			log("This is a jpeg file");
+			return true;
 		}
 		else
 		{
 			log("Nope. Not a jpeg file");
+			return false;
 		}
 		
-		stream.close();
 	}
 
-	public static void getHuffman (File image, byte[] bytes) throws FileNotFoundException
+	public static int getHuffman (File image, byte[] bytes) throws FileNotFoundException
 	{
 		 
 		boolean atHuffman = false; 
@@ -72,6 +87,8 @@ public class JpegData
 		{
 			
 		}
+
+		return 1;
 	}
 
 }

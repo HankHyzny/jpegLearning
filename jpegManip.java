@@ -1,4 +1,4 @@
-public class jpegManip.java
+public class jpegManip
 {
 	
 }

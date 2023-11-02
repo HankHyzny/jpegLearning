@@ -1,5 +1,8 @@
+//package jpegLearning.src;
+
 import java.io.*;
 import java.util.*;
+//import static jpegLearning.src.*;
 
 public class Main 
 { 
@@ -13,6 +16,6 @@ public class Main
 
 		File image = new File(userFile);
 		System.out.println("Can Read File: " + image.canRead());
-		JpegData.fileInfo(image);
+		JpegData.isJpeg(image);
 	}
 }
