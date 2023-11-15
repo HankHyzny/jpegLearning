@@ -14,17 +14,70 @@ public class JpegData
 	//This might be a bad design choice, maybe I'll shove all of this into the 
 	//Other classes
 	//
-	
-	private String fileName;
-	private String filePath;
-	private int fileSize;
+
 	private final  static byte[] HUFFMAN_START = new byte[]{ (byte)0xff, (byte)0xc4}; 
 	private final static byte[] JPEG_START = new byte[]{ (byte)0xff, (byte)0xd8};
 
 
 	private static void log(String text) //maybe enhance or replace w/ other
 	{
+
 		System.out.print(text);
+
+	}
+
+	private static void log(byte[] data, char arg)
+	{
+		arg =  (char) ((int) arg |0b0000000000100000);
+
+		switch (arg)
+		{
+			case 'b' :
+				{
+				String output;	
+				for (int i = 0; i < data.length; i ++)
+				{
+					output = "";
+					output += (data[i] & 0b10000000) == 0b10000000 ? "1" : "0";	//inefficient, probably better ways built into the language
+					output += (data[i] & 0b01000000) == 0b01000000 ? "1" : "0";	//for example: new string allocated every line
+					output += (data[i] & 0b00100000) == 0b00100000 ? "1" : "0";
+					output += (data[i] & 0b00010000) == 0b00010000 ? "1" : "0";
+					output += (data[i] & 0b00001000) == 0b00001000 ? "1" : "0";
+					output += (data[i] & 0b00000100) == 0b00000100 ? "1" : "0";
+					output += (data[i] & 0b00000010) == 0b00000010 ? "1" : "0";
+					output += (data[i] & 0b00000001) == 0b00000001 ? "1" : "0";
+
+					System.out.println(output);
+				}
+				break;
+				}
+			case 'x' :									// buggy, not working. Something with byte conversions? 
+				String output;								// doesn't actually make sense to use java (non systems 
+													// language) for this does it? Whatever.
+					for (int i = 0; i < data.length; i++)
+					{
+						output = "";
+						if ( (data[i] >>> 4) < 10)
+							output += "" + (data[i] >>> 4);
+						else
+						{
+							output += (char) (0b01000000 + data[i] >>> 4);
+						}
+
+						if ( (data[i] & 0b00001111) < 10)
+							output += "" + (data[i] &0b0000111);
+						else
+						{
+							output += (char) (0b01000000 + data[i] &0b00001111);
+						}
+
+						System.out.println(output);
+					}
+					break;
+				
+
+		}
+					
 	}
 
 
@@ -33,7 +86,6 @@ public class JpegData
 
 		if (first.length != second.length)
 		{
-			log("ERROR: arrays of unequal size");
 			return false;
 		}
 		else
@@ -91,5 +143,12 @@ public class JpegData
 		return 1;
 	}
 
+	public static void main(String[] args) // main function for testing
+	{
+		byte[] test = {(byte) 0x82, (byte) 0x23};
+
+		log(test, 'b');
+
+		}
 }
 
