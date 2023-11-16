@@ -3,6 +3,7 @@
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.*; 
+import java.util.Scanner;
 //The explicitly declared will be what I use, the wildcard is because I forget the
 //name of the exceptions
 
@@ -28,7 +29,7 @@ public class JpegData
 
 	private static void log(byte[] data, char arg)
 	{
-		arg =  (char) ((int) arg |0b0000000000100000);
+		arg =  (char) ((int) arg | 0b0000000000100000);
 
 		switch (arg)
 		{
@@ -51,30 +52,32 @@ public class JpegData
 				}
 				break;
 				}
-			case 'x' :									// buggy, not working. Something with byte conversions? 
-				String output;								// doesn't actually make sense to use java (non systems 
-													// language) for this does it? Whatever.
+
+			case 'x' :															// buggy, not working. Something with byte conversions? 
+				String output;													// doesn't actually make sense to use java (non systems 
+																				// language) for this does it? Whatever.
 					for (int i = 0; i < data.length; i++)
 					{
-						output = "";
+						output = ""; 
 						if ( (data[i] >>> 4) < 10)
+						{
 							output += "" + (data[i] >>> 4);
-						else
-						{
-							output += (char) (0b01000000 + data[i] >>> 4);
 						}
-
-						if ( (data[i] & 0b00001111) < 10)
-							output += "" + (data[i] &0b0000111);
 						else
 						{
-							output += (char) (0b01000000 + data[i] &0b00001111);
+							output += (char) (0b01000000 +((byte) ((data[i] & 0xff) >>> 4) - 9 ) ); //why does java mess with my bytes when byte shifting
+						}																			//dont make my bytes an int!!! 
+																									//(even though ints are really all computer handle nowadays...
+						if ( (data[i] & 0b00001111) < 10)											//and floats. and doubles. Computers are big
+							output += "" + (data[i] & 0b00001111);
+						else
+						{
+							output += (char) (0b01000000 + ( (data[i] & 0b00001111) - 9) );
 						}
 
 						System.out.println(output);
 					}
 					break;
-				
 
 		}
 					
@@ -145,10 +148,11 @@ public class JpegData
 
 	public static void main(String[] args) // main function for testing
 	{
-		byte[] test = {(byte) 0x82, (byte) 0x23};
+
+		byte[] test = {(byte) 0xab, (byte) 0xcd, (byte) 0xef};
 
 		log(test, 'b');
-
-		}
+		log(test, 'x');
+	}
 }
 
