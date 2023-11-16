@@ -20,48 +20,48 @@ public class JpegData
 	private final static byte[] JPEG_START = new byte[]{ (byte)0xff, (byte)0xd8};
 
 
-	private static void log(String text) //maybe enhance or replace w/ other
+	private static void log(String text) 
 	{
 
 		System.out.print(text);
 
 	}
-
 	private static void log(byte[] data, char arg)
 	{
-		arg =  (char) ((int) arg | 0b0000000000100000);
+		log(data, arg, 8);
+	}
+
+	private static void log(byte[] data, char arg, int len)
+	{
+		arg =  (char) ((int) arg | 0b0000000000100000);			//convert arg to lowercose
+		String output = "";
 
 		switch (arg)
 		{
 			case 'b' :
-				{
-				String output;	
 				for (int i = 0; i < data.length; i ++)
 				{
-					output = "";
 					output += (data[i] & 0b10000000) == 0b10000000 ? "1" : "0";	//inefficient, probably better ways built into the language
 					output += (data[i] & 0b01000000) == 0b01000000 ? "1" : "0";	//for example: new string allocated every line
-					output += (data[i] & 0b00100000) == 0b00100000 ? "1" : "0";
+					output += (data[i] & 0b00100000) == 0b00100000 ? "1" : "0"; //String builder? Thats something
 					output += (data[i] & 0b00010000) == 0b00010000 ? "1" : "0";
 					output += (data[i] & 0b00001000) == 0b00001000 ? "1" : "0";
 					output += (data[i] & 0b00000100) == 0b00000100 ? "1" : "0";
 					output += (data[i] & 0b00000010) == 0b00000010 ? "1" : "0";
 					output += (data[i] & 0b00000001) == 0b00000001 ? "1" : "0";
+					
+					output += " ";
 
-					System.out.println(output);
 				}
 				break;
-				}
 
-			case 'x' :															// buggy, not working. Something with byte conversions? 
-				String output;													// doesn't actually make sense to use java (non systems 
-																				// language) for this does it? Whatever.
+			case 'x' :														
+																	
 					for (int i = 0; i < data.length; i++)
 					{
-						output = ""; 
-						if ( (data[i] >>> 4) < 10)
+						if ( ( (data[i] & 0xff) >>> 4) < 10)
 						{
-							output += "" + (data[i] >>> 4);
+							output += "" + ( (data[i] & 0xff) >>> 4);
 						}
 						else
 						{
@@ -75,11 +75,33 @@ public class JpegData
 							output += (char) (0b01000000 + ( (data[i] & 0b00001111) - 9) );
 						}
 
-						System.out.println(output);
+						output += " ";
 					}
 					break;
+					
+			case 'd' : 
+
+					for (int i = 0; i < data.length; i++)
+					{
+						if (data[i] < 0)
+							output += "" + (data[i] + 256);
+						else
+							output += data[i];
+						output += " ";
+					}
 
 		}
+
+		int width = output.indexOf(" ") + 1; // + 1 because that makes the spacing work
+		for (int i = 0; i< (output.length() / (width*len)); i++)
+		{
+			System.out.println(output.substring( width * i * len, width * (i+1) * len));
+		}
+
+			int lastFew = output.length() / (width * len); // this is always perfect I think
+
+			System.out.println(output.substring(lastFew * width * len));
+
 					
 	}
 
@@ -104,9 +126,7 @@ public class JpegData
 		}
 	}
 
-	//todo: implenent print byte array method with arguments: as hex, as binary, as decimal
-
-	public static boolean isJpeg (File image) throws FileNotFoundException, IOException //no error handling for now
+	public static boolean isJpeg (File image, boolean verbose) throws FileNotFoundException, IOException //no error handling for now
 	{
 		byte[] firstTwo = new byte[2];
 
@@ -120,17 +140,25 @@ public class JpegData
 
 		if (compareBytes(firstTwo, JPEG_START))
 		{
-			log("This is a jpeg file");
+			if (verbose)
+				System.out.println("Jpeg File: YES");
 			return true;
 		}
 		else
 		{
-			log("Nope. Not a jpeg file");
+			if (verbose)
+				System.out.println("Jepg File: NO");
 			return false;
 		}
 		
 	}
 
+	public static boolean isJpeg (File image) throws FileNotFoundException, IOException
+	{
+		return isJpeg(image, false); //is there a better way to do verbosity arguments?
+									 //Maybe make a log method w/ verbosity parameter
+	}
+	
 	public static int getHuffman (File image, byte[] bytes) throws FileNotFoundException
 	{
 		 
@@ -149,10 +177,11 @@ public class JpegData
 	public static void main(String[] args) // main function for testing
 	{
 
-		byte[] test = {(byte) 0xab, (byte) 0xcd, (byte) 0xef};
+		byte[] test = {(byte) 0xab, (byte) 0xcd, (byte) 0xef, 0, 1, 127, (byte) 128, (byte) 255, (byte) 0x80, (byte) 0x88};
 
-		log(test, 'b');
+		log(test, 'b' );
 		log(test, 'x');
+		log(test, 'd');
 	}
 }
 
