@@ -3,9 +3,10 @@
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.*; 
-import java.util.Scanner;
 //The explicitly declared will be what I use, the wildcard is because I forget the
 //name of the exceptions
+
+
 
 public class JpegData
 {
@@ -26,83 +27,82 @@ public class JpegData
 		System.out.print(text);
 
 	}
-	private static void log(byte[] data, char arg)
+
+	public static void log(byte[] data, char arg)
 	{
-		log(data, arg, 8);
+		log(data, 8, arg);
 	}
 
-	private static void log(byte[] data, char arg, int len)
+	public static void log(byte[] data, int len, char arg)
 	{
-		arg =  (char) ((int) arg | 0b0000000000100000);			//convert arg to lowercose
-		String output = "";
 
+		arg =  (char) ((int) arg | 0b0000000000100000);			//convert arg to lowercose
+		char[] output;
 		switch (arg)
 		{
 			case 'b' :
-				for (int i = 0; i < data.length; i ++)
+				output = new char[8];
+				for (int i = 0; i < data.length; i++)
 				{
-					output += (data[i] & 0b10000000) == 0b10000000 ? "1" : "0";	//inefficient, probably better ways built into the language
-					output += (data[i] & 0b01000000) == 0b01000000 ? "1" : "0";	//for example: new string allocated every line
-					output += (data[i] & 0b00100000) == 0b00100000 ? "1" : "0"; //String builder? Thats something
-					output += (data[i] & 0b00010000) == 0b00010000 ? "1" : "0";
-					output += (data[i] & 0b00001000) == 0b00001000 ? "1" : "0";
-					output += (data[i] & 0b00000100) == 0b00000100 ? "1" : "0";
-					output += (data[i] & 0b00000010) == 0b00000010 ? "1" : "0";
-					output += (data[i] & 0b00000001) == 0b00000001 ? "1" : "0";
-					
-					output += " ";
+					output[0] = (data[i] & 0b10000000) == 0b10000000 ? '1' : '0'; //char arrays are much faster than Strings
+					output[1] = (data[i] & 0b01000000) == 0b01000000 ? '1' : '0'; //This can go through one meg of random data
+					output[2] = (data[i] & 0b00100000) == 0b00100000 ? '1' : '0'; //in like 60 millis without the print statement
+					output[3] = (data[i] & 0b00010000) == 0b00010000 ? '1' : '0'; //and like some seconds with the prints
+					output[4] = (data[i] & 0b00001000) == 0b00001000 ? '1' : '0'; //its like O(logn) or less
+					output[5] = (data[i] & 0b00000100) == 0b00000100 ? '1' : '0'; //but for small n its not that big a difference
+					output[6] = (data[i] & 0b00000010) == 0b00000010 ? '1' : '0';
+					output[7] = (data[i] & 0b00000001) == 0b00000001 ? '1' : '0';
 
+					System.out.print(String.valueOf(output) + " ");
+					if (( i+1) % len == 0)
+						System.out.println();
 				}
 				break;
 
 			case 'x' :														
-																	
-					for (int i = 0; i < data.length; i++)
-					{
-						if ( ( (data[i] & 0xff) >>> 4) < 10)
-						{
-							output += "" + ( (data[i] & 0xff) >>> 4);
-						}
-						else
-						{
-							output += (char) (0b01000000 +((byte) ((data[i] & 0xff) >>> 4) - 9 ) ); //why does java mess with my bytes when byte shifting
-						}																			//dont make my bytes an int!!! 
-																									//(even though ints are really all computer handle nowadays...
-						if ( (data[i] & 0b00001111) < 10)											//and floats. and doubles. Computers are big
-							output += "" + (data[i] & 0b00001111);
-						else
-						{
-							output += (char) (0b01000000 + ( (data[i] & 0b00001111) - 9) );
-						}
 
-						output += " ";
+				output = new char[2];											
+
+				for (int i = 0; i < data.length; i++)
+				{
+					if ( ( (data[i] & 0xff) >>> 4) < 10)
+					{
+						output[0] =  (char) (0x30 + ( (data[i] & 0xff) >>> 4));
 					}
-					break;
+					else
+					{
+						output[0] = (char) (0b01000000 +((byte) ((data[i] & 0xff) >>> 4) - 9 ) ); //why does java mess with my bytes when byte shifting
+					}																			//dont make my bytes an int!!! 
+																								//(even though ints are really all computer handle nowadays...
+					if ( (data[i] & 0b00001111) < 10)											//and floats. and doubles. Computers are big
+						output[1] = (char) (0x30 + (data[i] & 0b00001111));
+					else
+					{
+						output[1] = (char) (0b01000000 + ( (data[i] & 0b00001111) - 9) );		//I love magic numbers :]
+					}
+
+					System.out.print(String.valueOf(output) + " ");
+					if (( i+1) % len == 0)
+						System.out.println();
+				}
+				break;
 					
 			case 'd' : 
+					output = new char[3];
 
 					for (int i = 0; i < data.length; i++)
 					{
-						if (data[i] < 0)
-							output += "" + (data[i] + 256);
-						else
-							output += data[i];
-						output += " ";
+						output[0] =(char) (0x30 + ((data[i]+128) / 100));						//Know what I love more than magic numbers?
+						output[1] =(char) (0x30 + (((data[i]+128) / 10) % 10));					//Equivalent but inconsitently represented
+						output[2] =(char) (0x30 + ((data[i]+128) % 10));						//magic numbers!
+						System.out.print(String.valueOf(output) + " ");
+						if ( (i+1) % len == 0)
+							System.out.println();
 					}
+					break;
 
 		}
-
-		int width = output.indexOf(" ") + 1; // + 1 because that makes the spacing work
-		for (int i = 0; i< (output.length() / (width*len)); i++)
-		{
-			System.out.println(output.substring( width * i * len, width * (i+1) * len));
-		}
-
-			int lastFew = output.length() / (width * len); // this is always perfect I think
-
-			System.out.println(output.substring(lastFew * width * len));
-
-					
+		
 	}
 
 
@@ -174,14 +174,5 @@ public class JpegData
 		return 1;
 	}
 
-	public static void main(String[] args) // main function for testing
-	{
-
-		byte[] test = {(byte) 0xab, (byte) 0xcd, (byte) 0xef, 0, 1, 127, (byte) 128, (byte) 255, (byte) 0x80, (byte) 0x88};
-
-		log(test, 'b' );
-		log(test, 'x');
-		log(test, 'd');
-	}
 }
 
