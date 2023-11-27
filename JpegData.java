@@ -85,6 +85,7 @@ public class JpegData
 					if (( i+1) % len == 0)
 						System.out.println();
 				}
+				System.out.println();
 				break;
 					
 			case 'd' : 
