@@ -3,16 +3,18 @@ import java.io.*;
 import java.util.*;
 
 interface TimeTest {
-	void run(byte[] data, int len, char arg);
+	void run(byte[] bytes, int len, char arg);
 }
 
 public class TimerTest
 {
 
-	public static void time(byte[] data, int len, char arg, TimeTest function)
+	public static void time(TimeTest function, Object... args)
 	{
+		
+
 		long start = System.currentTimeMillis();
-		function.run(data, len, arg);
+		function.run((byte[]) args[0], (Integer) args[1], (Character) args[2]);
 		long end = System.currentTimeMillis();
 
 		System.out.println("Time elapsed: " + (end - start));
@@ -23,12 +25,21 @@ public class TimerTest
 		var file = new File(args[0]);
 
 		var stream = new FileInputStream(file);
-		
+
 		byte[] bytes = new byte[(int)file.length()];
 
 		stream.read(bytes);
 
-		time(bytes, Integer.decode(args[1]), args[2].toCharArray()[0], JpegData::log);
+		Object[] defaultArgs = {bytes, 16, 'x'};
+
+		if (args.length == 3)
+		{
+			defaultArgs[0] = bytes;
+			defaultArgs[1] = Integer.decode(args[1]);
+			defaultArgs[2] = args[2].toCharArray()[0];
+		}
+
+		time(JpegData::log, defaultArgs);
 		System.out.println("File is: " + file.length() + " bytes");
 		stream.close();
 	}
